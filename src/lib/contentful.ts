@@ -1,10 +1,18 @@
-import { createClient, Entry } from 'contentful';
+import { createClient, Entry, ContentfulClientApi } from 'contentful';
 
-// Contentful client
-const client = createClient({
-  space: import.meta.env.VITE_CONTENTFUL_SPACE_ID || '',
-  accessToken: import.meta.env.VITE_CONTENTFUL_ACCESS_TOKEN || '',
-});
+// Check if Contentful is configured
+const hasContentfulConfig = !!(
+  import.meta.env.VITE_CONTENTFUL_SPACE_ID &&
+  import.meta.env.VITE_CONTENTFUL_ACCESS_TOKEN
+);
+
+// Contentful client - only create if credentials exist
+const client: ContentfulClientApi<undefined> | null = hasContentfulConfig
+  ? createClient({
+      space: import.meta.env.VITE_CONTENTFUL_SPACE_ID,
+      accessToken: import.meta.env.VITE_CONTENTFUL_ACCESS_TOKEN,
+    })
+  : null;
 
 // Types for blog post fields from Contentful
 export interface BlogPostFields {
@@ -60,6 +68,10 @@ const transformEntry = (entry: Entry<BlogPostFields>): BlogPost => {
 
 // Fetch all blog posts
 export const fetchBlogPosts = async (locale: string = 'tr'): Promise<BlogPost[]> => {
+  if (!client) {
+    console.warn('Contentful is not configured. Skipping blog fetch.');
+    return [];
+  }
   try {
     const response = await client.getEntries<BlogPostFields>({
       content_type: 'blogPage',
@@ -78,6 +90,10 @@ export const fetchBlogPostBySlug = async (
   slug: string,
   locale: string = 'tr'
 ): Promise<BlogPost | null> => {
+  if (!client) {
+    console.warn('Contentful is not configured. Skipping blog fetch.');
+    return null;
+  }
   try {
     const response = await client.getEntries<BlogPostFields>({
       content_type: 'blogPage',
@@ -95,10 +111,7 @@ export const fetchBlogPostBySlug = async (
 
 // Check if Contentful is configured
 export const isContentfulConfigured = (): boolean => {
-  return !!(
-    import.meta.env.VITE_CONTENTFUL_SPACE_ID &&
-    import.meta.env.VITE_CONTENTFUL_ACCESS_TOKEN
-  );
+  return hasContentfulConfig;
 };
 
 export default client;
