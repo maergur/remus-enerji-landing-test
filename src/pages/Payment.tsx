@@ -171,7 +171,7 @@ const Payment = () => {
       {/* LEFT — Form panel (form card fills vertical space with logo pinned to its top) */}
       <div className="w-full lg:w-1/2 lg:h-screen flex flex-col bg-white lg:overflow-y-auto">
         {/* Middle: Form card centered */}
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-10 pt-10 pb-4">
           <div className="w-full max-w-xl">
             <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_4px_24px_-1px_rgba(16,185,129,0.08)] p-6 md:p-8">
               <a
@@ -527,49 +527,51 @@ const Payment = () => {
           </div>
         </div>
 
-        {/* Bottom: compact legal strip */}
-        <div className="px-4 sm:px-6 lg:px-8 pb-6 pt-2 text-xs text-gray-500 space-y-2">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-            <a href="/mesafeli-satis" className="hover:text-primary transition-colors">
-              {t('Mesafeli Satış', 'Distance Sales')}
-            </a>
-            <span className="text-gray-300">•</span>
-            <a href="/on-bilgilendirme" className="hover:text-primary transition-colors">
-              {t('Ön Bilgilendirme', 'Preliminary Info')}
-            </a>
-            <span className="text-gray-300">•</span>
-            <a href="/iade-iptal" className="hover:text-primary transition-colors">
-              {t('İade / İptal', 'Refund / Cancellation')}
-            </a>
-            <span className="text-gray-300">•</span>
-            <a href="/teslimat" className="hover:text-primary transition-colors">
-              {t('Teslimat', 'Delivery')}
-            </a>
-            <span className="text-gray-300">•</span>
-            <button
-              onClick={() => window.dispatchEvent(new Event('open-cookie-policy'))}
-              className="hover:text-primary transition-colors"
-            >
-              {t('Gizlilik', 'Privacy')}
-            </button>
-          </div>
-          <div className="leading-relaxed">
-            <span className="font-medium text-gray-700">{COMPANY.name}</span>
-            {' • '}
-            {COMPANY.address}
-          </div>
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>
-              <Phone className="inline w-3 h-3 mr-1 -mt-0.5" />
-              {COMPANY.phone}
-            </span>
-            <span>
-              <Mail className="inline w-3 h-3 mr-1 -mt-0.5" />
-              {COMPANY.email}
-            </span>
-          </div>
-          <div className="text-gray-400">
-            © {new Date().getFullYear()} Remus Enerji. {t('Tüm hakları saklıdır.', 'All rights reserved.')}
+        {/* Bottom: compact legal strip — centered, aligned to form card width */}
+        <div className="px-4 sm:px-6 lg:px-10 pb-10 pt-2">
+          <div className="max-w-xl mx-auto text-xs text-gray-500 space-y-2 text-center">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
+              <a href="/mesafeli-satis" className="hover:text-primary transition-colors">
+                {t('Mesafeli Satış', 'Distance Sales')}
+              </a>
+              <span className="text-gray-300">•</span>
+              <a href="/on-bilgilendirme" className="hover:text-primary transition-colors">
+                {t('Ön Bilgilendirme', 'Preliminary Info')}
+              </a>
+              <span className="text-gray-300">•</span>
+              <a href="/iade-iptal" className="hover:text-primary transition-colors">
+                {t('İade / İptal', 'Refund / Cancellation')}
+              </a>
+              <span className="text-gray-300">•</span>
+              <a href="/teslimat" className="hover:text-primary transition-colors">
+                {t('Teslimat', 'Delivery')}
+              </a>
+              <span className="text-gray-300">•</span>
+              <button
+                onClick={() => window.dispatchEvent(new Event('open-cookie-policy'))}
+                className="hover:text-primary transition-colors"
+              >
+                {t('Gizlilik', 'Privacy')}
+              </button>
+            </div>
+            <div className="leading-relaxed">
+              <span className="font-medium text-gray-700">{COMPANY.name}</span>
+              {' • '}
+              {COMPANY.address}
+            </div>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
+              <span>
+                <Phone className="inline w-3 h-3 mr-1 -mt-0.5" />
+                {COMPANY.phone}
+              </span>
+              <span>
+                <Mail className="inline w-3 h-3 mr-1 -mt-0.5" />
+                {COMPANY.email}
+              </span>
+            </div>
+            <div className="text-gray-400">
+              © {new Date().getFullYear()} Remus Enerji. {t('Tüm hakları saklıdır.', 'All rights reserved.')}
+            </div>
           </div>
         </div>
       </div>
