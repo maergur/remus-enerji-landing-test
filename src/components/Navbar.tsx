@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import remusLogo from '../assets/remus-logo-2.svg';
 import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { LogIn, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, X } from 'lucide-react';
+import { LogIn, Mail, Phone, Lock, Eye, EyeOff, ArrowRight, X, CreditCard } from 'lucide-react';
 
 const CUSTOMER_PORTAL_URL = 'https://remus-customerportal.lovable.app/';
 
@@ -122,40 +122,23 @@ const Navbar = () => {
             >
               {t('navbar.blog')}
             </button>
-            <button 
-              onClick={openLoginDialog} 
-              className="text-sm font-medium text-gray-700 hover:text-primary flex items-center gap-1.5 transition-all duration-200 px-4 py-2 rounded-full border border-gray-200 hover:border-primary/30 hover:bg-primary/5"
-            >
-              <LogIn className="w-4 h-4" />
-              {t('navbar.join_us')}
-            </button>
+            <div className="flex items-center gap-1.5 pl-4 ml-2 border-l border-gray-200">
+              <button
+                onClick={openLoginDialog}
+                className="inline-flex items-center gap-1.5 h-9 px-4 rounded-full text-sm font-medium text-gray-600 hover:text-primary hover:bg-primary/5 transition-colors"
+              >
+                <LogIn className="w-4 h-4" />
+                {t('navbar.join_us')}
+              </button>
+              <button
+                onClick={() => navigateTo('/odeme')}
+                className="cta-button group flex items-center gap-2 text-sm py-2 px-5"
+              >
+                {t('navbar.pay_bill')}
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
           </nav>
-          
-          {/* Language Switcher */}
-          <div className="hidden md:flex items-center ml-4 bg-gray-100 rounded-full px-1 py-1">
-            <button
-              onClick={() => i18n.changeLanguage('tr')}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-                i18n.language === 'tr' 
-                  ? 'bg-primary text-white' 
-                  : 'text-gray-600 hover:text-primary'
-              )}
-            >
-              TR
-            </button>
-            <button
-              onClick={() => i18n.changeLanguage('en')}
-              className={cn(
-                "px-3 py-1.5 rounded-full text-sm font-medium transition-all duration-200",
-                i18n.language === 'en' 
-                  ? 'bg-primary text-white' 
-                  : 'text-gray-600 hover:text-primary'
-              )}
-            >
-              EN
-            </button>
-          </div>
         </div>
         
         {/* Mobile Menu Button */}
@@ -214,9 +197,16 @@ const Navbar = () => {
             >
               {t('navbar.blog')}
             </button>
-            <button 
+            <button
+              onClick={() => navigateTo('/odeme')}
+              className="text-center mt-4 py-3 px-6 bg-primary text-white font-semibold rounded-full flex items-center justify-center gap-2 shadow-[0_4px_14px_rgba(16,185,129,0.3)]"
+            >
+              <CreditCard className="w-4 h-4" />
+              {t('navbar.pay_bill')}
+            </button>
+            <button
               onClick={openLoginDialog}
-              className="text-center mt-4 py-3 px-6 text-gray-700 hover:text-primary transition-all flex items-center justify-center gap-2 font-medium rounded-full border border-gray-200 hover:border-primary/30 hover:bg-primary/5"
+              className="text-center py-3 px-6 text-gray-700 hover:text-primary transition-all flex items-center justify-center gap-2 font-medium rounded-full border border-gray-200 hover:border-primary/30 hover:bg-primary/5"
             >
               <LogIn className="w-4 h-4" />
               {t('navbar.join_us')}

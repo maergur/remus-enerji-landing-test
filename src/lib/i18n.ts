@@ -10,7 +10,8 @@ const resources = {
         about: "About",
         faq: "FAQ",
         blog: "Blog",
-        join_us: "Login"
+        join_us: "Login",
+        pay_bill: "Pay Bill"
       },
       hero: {
         badge: "Turkey's Next Generation Energy Platform",
@@ -334,7 +335,8 @@ const resources = {
         about: "Hakkımızda",
         faq: "SSS",
         blog: "Blog",
-        join_us: "Giriş Yap"
+        join_us: "Giriş Yap",
+        pay_bill: "Fatura Öde"
       },
       hero: {
         badge: "Türkiye'nin Yeni Nesil Enerji Platformu",

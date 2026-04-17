@@ -1,9 +1,10 @@
 import React from 'react';
-import { Phone, Mail, MapPin } from 'lucide-react';
+import { Phone, Mail, MapPin, Globe } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { cn } from '@/lib/utils';
 
 const Footer = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   return (
     <footer className="relative overflow-hidden border-t border-gray-200 bg-white">
       <div className="container mx-auto px-4 py-12 relative z-10">
@@ -105,6 +106,35 @@ const Footer = () => {
             <p className="text-sm text-gray-500">
               © 2025 Remus Enerji. {t('footer.text')}
             </p>
+
+            {/* Language Switcher */}
+            <div className="inline-flex items-center gap-1 bg-gray-100 rounded-full px-1 py-1">
+              <Globe className="w-3.5 h-3.5 text-gray-400 ml-2" />
+              <button
+                onClick={() => i18n.changeLanguage('tr')}
+                aria-pressed={i18n.language === 'tr'}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200',
+                  i18n.language === 'tr'
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                )}
+              >
+                TR
+              </button>
+              <button
+                onClick={() => i18n.changeLanguage('en')}
+                aria-pressed={i18n.language === 'en'}
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-semibold transition-all duration-200',
+                  i18n.language === 'en'
+                    ? 'bg-white text-primary shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
+                )}
+              >
+                EN
+              </button>
+            </div>
           </div>
         </div>
       </div>
