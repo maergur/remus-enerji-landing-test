@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Download, Home, Hash, Calendar, Receipt, User } from 'lucide-react';
 import remusLogo from '@/assets/remus-logo-2.svg';
+import PaymentFooter from '@/components/PaymentFooter';
 
 const PaymentSuccess: React.FC = () => {
   const { i18n } = useTranslation();
@@ -14,6 +15,7 @@ const PaymentSuccess: React.FC = () => {
     fullName: string;
     period: string;
     invoiceId: string;
+    count: number;
     txnId: string;
     paidAt: string;
   } | null>(null);
@@ -24,12 +26,14 @@ const PaymentSuccess: React.FC = () => {
     const txnId =
       search.get('txnId') ||
       'RMS-' + Math.random().toString(36).slice(2, 10).toUpperCase();
+    const parsedCount = Number(search.get('count') || '1');
     setParams({
       amount: search.get('amount') || '0.00',
       subscriberNo: search.get('subscriberNo') || '—',
       fullName: search.get('fullName') || '—',
       period: search.get('period') || '—',
       invoiceId: search.get('invoiceId') || '—',
+      count: Number.isFinite(parsedCount) && parsedCount > 0 ? parsedCount : 1,
       txnId,
       paidAt: new Date().toLocaleString(isEn ? 'en-GB' : 'tr-TR'),
     });
@@ -45,9 +49,10 @@ const PaymentSuccess: React.FC = () => {
   }, [params, isEn]);
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-b from-primary/5 via-white to-white flex items-center justify-center px-4 py-10">
-      <div className="w-full max-w-xl">
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(16,185,129,0.2)] p-6 md:p-8">
+    <div className="min-h-screen w-full bg-gradient-to-b from-primary/5 via-white to-white flex flex-col px-4 py-10">
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-full max-w-xl">
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(16,185,129,0.2)] p-6 md:p-8">
           <a href="/" className="flex items-center justify-center mb-6 pb-5 border-b border-gray-100" aria-label="Remus Enerji">
             <img src={remusLogo} alt="Remus Enerji" className="h-11 w-auto" />
           </a>
@@ -89,7 +94,11 @@ const PaymentSuccess: React.FC = () => {
               />
               <Row
                 icon={<Receipt className="w-4 h-4" />}
-                label={t('Fatura Dönemi', 'Invoice Period')}
+                label={
+                  (params?.count ?? 1) > 1
+                    ? `${t('Fatura Dönemleri', 'Invoice Periods')} (${params?.count})`
+                    : t('Fatura Dönemi', 'Invoice Period')
+                }
                 value={params?.period ?? '—'}
               />
               <div className="pt-3 mt-3 border-t border-gray-200 flex items-center justify-between">
@@ -127,7 +136,11 @@ const PaymentSuccess: React.FC = () => {
               )}
             </p>
           </div>
+          </div>
         </div>
+      </div>
+      <div className="pt-8">
+        <PaymentFooter />
       </div>
     </div>
   );

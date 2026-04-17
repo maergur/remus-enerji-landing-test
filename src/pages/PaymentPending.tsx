@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Shield, Lock } from 'lucide-react';
 import remusLogo from '@/assets/remus-logo-2.svg';
+import PaymentFooter from '@/components/PaymentFooter';
 
 // Set to true once backend endpoint exists.
 const USE_REAL_BACKEND = false;
@@ -63,12 +64,23 @@ const PaymentPending: React.FC = () => {
       const success = Math.random() < 0.8;
       if (success) {
         sessionStorage.removeItem('remus.payment.payload');
+        const ids: string[] = Array.isArray(payload.invoiceIds)
+          ? payload.invoiceIds
+          : payload.invoiceId
+          ? [payload.invoiceId]
+          : [];
+        const periods: string[] = Array.isArray(payload.invoicePeriods)
+          ? payload.invoicePeriods
+          : payload.invoicePeriod
+          ? [payload.invoicePeriod]
+          : [];
         const qs = new URLSearchParams({
           amount: String(payload.amount),
           subscriberNo: payload.subscriberNo,
           fullName: payload.fullName,
-          invoiceId: payload.invoiceId,
-          period: payload.invoicePeriod,
+          invoiceId: ids.join(','),
+          period: periods.join(', '),
+          count: String(ids.length || 1),
           txnId: 'RMS-' + Math.random().toString(36).slice(2, 10).toUpperCase(),
         });
         window.location.replace(`/odeme/sonuc?${qs.toString()}`);
@@ -93,9 +105,10 @@ const PaymentPending: React.FC = () => {
   const stageIdx = stage === 'connecting' ? 0 : stage === 'verifying' ? 1 : 2;
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-primary/5 via-white to-white px-4 py-10">
-      <div className="w-full max-w-xl">
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(16,185,129,0.2)] p-6 md:p-8">
+    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-primary/5 via-white to-white px-4 py-10">
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-full max-w-xl">
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(16,185,129,0.2)] p-6 md:p-8">
           <div className="flex items-center justify-center mb-6 pb-5 border-b border-gray-100">
             <img src={remusLogo} alt="Remus Enerji" className="h-11 w-auto" />
           </div>
@@ -145,7 +158,11 @@ const PaymentPending: React.FC = () => {
               )}
             </div>
           </div>
+          </div>
         </div>
+      </div>
+      <div className="pt-8">
+        <PaymentFooter />
       </div>
     </div>
   );

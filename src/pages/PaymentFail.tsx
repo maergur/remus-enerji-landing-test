@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { XCircle, RotateCw, Home, Phone } from 'lucide-react';
 import remusLogo from '@/assets/remus-logo-2.svg';
+import PaymentFooter from '@/components/PaymentFooter';
 
 type Reason = 'insufficient_funds' | 'declined' | '3ds_failed' | 'connection' | 'unknown';
 
@@ -63,9 +64,10 @@ const PaymentFail: React.FC = () => {
   const current = reasonText[reason];
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-red-50/60 via-white to-white px-4 py-10">
-      <div className="w-full max-w-xl">
-        <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(239,68,68,0.2)] p-6 md:p-8">
+    <div className="min-h-screen w-full flex flex-col bg-gradient-to-b from-red-50/60 via-white to-white px-4 py-10">
+      <div className="flex-1 flex items-center justify-center w-full">
+        <div className="w-full max-w-xl">
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-[0_8px_32px_-8px_rgba(239,68,68,0.2)] p-6 md:p-8">
           <div className="flex items-center justify-center mb-6 pb-5 border-b border-gray-100">
             <img src={remusLogo} alt="Remus Enerji" className="h-11 w-auto" />
           </div>
@@ -104,7 +106,11 @@ const PaymentFail: React.FC = () => {
               {t('Destek:', 'Support:')} +90 (850) 360 71 25
             </div>
           </div>
+          </div>
         </div>
+      </div>
+      <div className="pt-8">
+        <PaymentFooter />
       </div>
     </div>
   );

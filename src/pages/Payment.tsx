@@ -9,8 +9,6 @@ import {
   CheckCircle2,
   User,
   Hash,
-  Mail,
-  Phone,
   ExternalLink,
   Search,
   Receipt,
@@ -20,7 +18,7 @@ import {
 // ArrowLeft stays for the step 2/3 Back navigation buttons.
 import remusLogo from '@/assets/remus-logo-2.svg';
 import paymentBanner from '@/assets/payment-banner.jpg';
-import CardBrands from '@/components/CardBrands';
+import PaymentFooter from '@/components/PaymentFooter';
 
 type Invoice = {
   id: string;
@@ -32,13 +30,6 @@ type Invoice = {
 type QueryState = 'idle' | 'loading' | 'not_found' | 'success';
 type ConsentKey = 'distanceSale' | 'preInfo' | 'refund';
 type StepId = 1 | 2 | 3;
-
-const COMPANY = {
-  name: 'Remus Enerji Elektrik Tedarik A.Ş.',
-  address: 'Osmangazi Mah. Sanayi Cad. No: 33 İç Kapı No: A Darıca / Kocaeli / Türkiye',
-  phone: '+90 (850) 360 71 25',
-  email: 'hello@remusenerji.com',
-};
 
 const Payment = () => {
   const { i18n } = useTranslation();
@@ -53,7 +44,7 @@ const Payment = () => {
 
   // Step 2
   const [invoices, setInvoices] = useState<Invoice[]>([]);
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState<string | null>(null);
+  const [selectedInvoiceIds, setSelectedInvoiceIds] = useState<string[]>([]);
 
   // Step 3
   const [fullName, setFullName] = useState('');
@@ -69,10 +60,26 @@ const Payment = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const selectedInvoice = useMemo(
-    () => invoices.find((i) => i.id === selectedInvoiceId) ?? null,
-    [invoices, selectedInvoiceId]
+  const selectedInvoices = useMemo(
+    () => invoices.filter((i) => selectedInvoiceIds.includes(i.id)),
+    [invoices, selectedInvoiceIds]
   );
+
+  const totalAmount = useMemo(
+    () => selectedInvoices.reduce((sum, i) => sum + i.amount, 0),
+    [selectedInvoices]
+  );
+
+  const hasSelection = selectedInvoices.length > 0;
+  const allSelected = invoices.length > 0 && selectedInvoiceIds.length === invoices.length;
+
+  const toggleInvoice = (id: string) =>
+    setSelectedInvoiceIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+
+  const toggleAll = () =>
+    setSelectedInvoiceIds(allSelected ? [] : invoices.map((i) => i.id));
 
   const allConsentsGiven = consents.distanceSale && consents.preInfo && consents.refund;
 
@@ -84,7 +91,7 @@ const Payment = () => {
   const isExpiryValid = /^(0[1-9]|1[0-2])\/\d{2}$/.test(cardExpiry);
   const isCvvValid = /^\d{3,4}$/.test(cardCvv);
   const canPay =
-    !!selectedInvoice &&
+    hasSelection &&
     fullName.trim().length >= 3 &&
     isCardValid &&
     isExpiryValid &&
@@ -105,7 +112,7 @@ const Payment = () => {
     if (!subscriberNo.trim() || queryState === 'loading') return;
     setError(null);
     setInvoices([]);
-    setSelectedInvoiceId(null);
+    setSelectedInvoiceIds([]);
     setQueryState('loading');
     await new Promise((r) => setTimeout(r, 900));
     const isValid = /^\d{6,}$/.test(subscriberNo.trim());
@@ -119,19 +126,19 @@ const Payment = () => {
       { id: 'INV-2026-01', period: 'Ocak 2026', dueDate: '2026-02-20', amount: 1025.9 },
     ];
     setInvoices(mock);
-    setSelectedInvoiceId(mock[0].id);
+    setSelectedInvoiceIds(mock.map((i) => i.id));
     setQueryState('success');
     setStep(2);
   };
 
   const goToStep3 = () => {
-    if (!selectedInvoice) return;
+    if (!hasSelection) return;
     setStep(3);
   };
 
   const handlePay = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!canPay || !selectedInvoice) return;
+    if (!canPay || !hasSelection) return;
     setError(null);
     setIsSubmitting(true);
 
@@ -139,9 +146,10 @@ const Payment = () => {
 
     const payload = {
       subscriberNo,
-      invoiceId: selectedInvoice.id,
-      invoicePeriod: selectedInvoice.period,
-      amount: selectedInvoice.amount,
+      invoiceIds: selectedInvoices.map((i) => i.id),
+      invoicePeriods: selectedInvoices.map((i) => i.period),
+      invoiceCount: selectedInvoices.length,
+      amount: totalAmount,
       currency: 'TRY',
       fullName,
       card: {
@@ -268,13 +276,19 @@ const Payment = () => {
                       <span className="text-xs font-medium text-gray-700">
                         {t('Ödenmemiş Faturalarınız', 'Your Unpaid Invoices')}
                       </span>
-                      <span className="text-xs text-gray-400">
-                        {invoices.length} {t('fatura', 'invoice(s)')}
-                      </span>
+                      <button
+                        type="button"
+                        onClick={toggleAll}
+                        className="text-xs font-semibold text-primary hover:underline"
+                      >
+                        {allSelected
+                          ? t('Seçimi Temizle', 'Clear All')
+                          : t('Tümünü Seç', 'Select All')}
+                      </button>
                     </div>
                     <div className="space-y-2">
                       {invoices.map((inv) => {
-                        const isSelected = inv.id === selectedInvoiceId;
+                        const isSelected = selectedInvoiceIds.includes(inv.id);
                         return (
                           <label
                             key={inv.id}
@@ -286,20 +300,23 @@ const Payment = () => {
                             )}
                           >
                             <input
-                              type="radio"
-                              name="invoice"
+                              type="checkbox"
                               value={inv.id}
                               checked={isSelected}
-                              onChange={() => setSelectedInvoiceId(inv.id)}
+                              onChange={() => toggleInvoice(inv.id)}
                               className="sr-only"
                             />
                             <span
                               className={cn(
-                                'w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition-colors',
-                                isSelected ? 'border-primary' : 'border-gray-300'
+                                'w-5 h-5 rounded-md border-2 flex-shrink-0 flex items-center justify-center transition-all',
+                                isSelected
+                                  ? 'bg-primary border-primary'
+                                  : 'bg-white border-gray-300'
                               )}
                             >
-                              {isSelected && <span className="w-2 h-2 rounded-full bg-primary" />}
+                              {isSelected && (
+                                <CheckCircle2 className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                              )}
                             </span>
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-2">
@@ -319,6 +336,33 @@ const Payment = () => {
                       })}
                     </div>
 
+                    <div
+                      className={cn(
+                        'rounded-xl border px-3.5 py-2.5 flex items-center justify-between transition-colors',
+                        hasSelection
+                          ? 'bg-primary/5 border-primary/15'
+                          : 'bg-gray-50 border-gray-200'
+                      )}
+                    >
+                      <span className="text-xs text-gray-600">
+                        <span className="font-semibold text-gray-800">
+                          {selectedInvoices.length}
+                        </span>{' '}
+                        / {invoices.length} {t('fatura seçili', 'selected')}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {t('Toplam', 'Total')}:{' '}
+                        <span
+                          className={cn(
+                            'text-base font-bold',
+                            hasSelection ? 'text-primary' : 'text-gray-400'
+                          )}
+                        >
+                          {fmtAmount(totalAmount)} ₺
+                        </span>
+                      </span>
+                    </div>
+
                     <div className="pt-2 flex gap-2">
                       <button
                         type="button"
@@ -331,10 +375,10 @@ const Payment = () => {
                       <button
                         type="button"
                         onClick={goToStep3}
-                        disabled={!selectedInvoice}
+                        disabled={!hasSelection}
                         className={cn(
                           'flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                          selectedInvoice
+                          hasSelection
                             ? 'bg-primary text-white hover:bg-primary/90 shadow-[0_4px_14px_rgba(16,185,129,0.3)]'
                             : 'bg-gray-300 text-white cursor-not-allowed'
                         )}
@@ -347,21 +391,25 @@ const Payment = () => {
                 )}
 
                 {/* ---------------- STEP 3: Card + Pay ---------------- */}
-                {step === 3 && selectedInvoice && (
+                {step === 3 && hasSelection && (
                   <>
                     {/* Invoice summary */}
                     <div className="rounded-xl bg-primary/5 border border-primary/15 p-3.5 flex items-center justify-between">
-                      <div>
+                      <div className="min-w-0">
                         <div className="text-xs text-gray-500">{t('Ödenecek Tutar', 'Amount Due')}</div>
                         <div className="flex items-center gap-2 mt-0.5">
-                          <Receipt className="w-3.5 h-3.5 text-primary" />
-                          <span className="text-sm font-medium text-gray-900">
-                            {selectedInvoice.period}
+                          <Receipt className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+                          <span className="text-sm font-medium text-gray-900 truncate">
+                            {selectedInvoices.length === 1
+                              ? selectedInvoices[0].period
+                              : `${selectedInvoices.length} ${t('fatura', 'invoices')} · ${selectedInvoices
+                                  .map((i) => i.period)
+                                  .join(', ')}`}
                           </span>
                         </div>
                       </div>
-                      <div className="text-2xl font-bold text-primary">
-                        {fmtAmount(selectedInvoice.amount)} ₺
+                      <div className="text-2xl font-bold text-primary flex-shrink-0 ml-3">
+                        {fmtAmount(totalAmount)} ₺
                       </div>
                     </div>
 
@@ -466,16 +514,6 @@ const Payment = () => {
                       </ConsentRow>
                     </div>
 
-                    {/* Card brands */}
-                    <div className="pt-3 border-t border-gray-100">
-                      <div className="flex items-center justify-between gap-4 flex-wrap">
-                        <span className="text-xs text-gray-500">
-                          {t('Kabul edilen kartlar', 'Accepted cards')}
-                        </span>
-                        <CardBrands />
-                      </div>
-                    </div>
-
                     {error && (
                       <div className="rounded-lg bg-red-50 border border-red-200 px-3 py-2 text-sm text-red-700">
                         {error}
@@ -507,7 +545,7 @@ const Payment = () => {
                         ) : (
                           <>
                             <Lock className="w-4 h-4" />
-                            {fmtAmount(selectedInvoice.amount)} ₺ {t('Öde', 'Pay')}
+                            {fmtAmount(totalAmount)} ₺ {t('Öde', 'Pay')}
                           </>
                         )}
                       </button>
@@ -529,50 +567,7 @@ const Payment = () => {
 
         {/* Bottom: compact legal strip — centered, aligned to form card width */}
         <div className="px-4 sm:px-6 lg:px-10 pb-10 pt-2">
-          <div className="max-w-xl mx-auto text-xs text-gray-500 space-y-2 text-center">
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1">
-              <a href="/mesafeli-satis" className="hover:text-primary transition-colors">
-                {t('Mesafeli Satış', 'Distance Sales')}
-              </a>
-              <span className="text-gray-300">•</span>
-              <a href="/on-bilgilendirme" className="hover:text-primary transition-colors">
-                {t('Ön Bilgilendirme', 'Preliminary Info')}
-              </a>
-              <span className="text-gray-300">•</span>
-              <a href="/iade-iptal" className="hover:text-primary transition-colors">
-                {t('İade / İptal', 'Refund / Cancellation')}
-              </a>
-              <span className="text-gray-300">•</span>
-              <a href="/teslimat" className="hover:text-primary transition-colors">
-                {t('Teslimat', 'Delivery')}
-              </a>
-              <span className="text-gray-300">•</span>
-              <button
-                onClick={() => window.dispatchEvent(new Event('open-cookie-policy'))}
-                className="hover:text-primary transition-colors"
-              >
-                {t('Gizlilik', 'Privacy')}
-              </button>
-            </div>
-            <div className="leading-relaxed">
-              <span className="font-medium text-gray-700">{COMPANY.name}</span>
-              {' • '}
-              {COMPANY.address}
-            </div>
-            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1">
-              <span>
-                <Phone className="inline w-3 h-3 mr-1 -mt-0.5" />
-                {COMPANY.phone}
-              </span>
-              <span>
-                <Mail className="inline w-3 h-3 mr-1 -mt-0.5" />
-                {COMPANY.email}
-              </span>
-            </div>
-            <div className="text-gray-400">
-              © {new Date().getFullYear()} Remus Enerji. {t('Tüm hakları saklıdır.', 'All rights reserved.')}
-            </div>
-          </div>
+          <PaymentFooter />
         </div>
       </div>
 
